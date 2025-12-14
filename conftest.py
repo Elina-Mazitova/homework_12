@@ -2,22 +2,35 @@ import os
 import pytest
 import allure
 from allure_commons.types import AttachmentType
-from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selene import browser
+from selenium import webdriver
 from dotenv import load_dotenv
 
-load_dotenv()
+DEFAULT_BROWSER_VERSION = "127.0"
 
-@pytest.fixture(scope='function')
-def setup_browser():
+
+def pytest_addoption(parser):
+    parser.addoption(
+        "--browserVersion",
+        help="Версия браузера для запуска тестов",
+        default=DEFAULT_BROWSER_VERSION,
+    )
+
+
+@pytest.fixture(scope="session", autouse=True)
+def load_env():
+    load_dotenv()
+
+
+@pytest.fixture(scope="function", autouse=True)
+def setup_browser(request):
+    browser_version = request.config.getoption("--browserVersion") or DEFAULT_BROWSER_VERSION
+
     options = Options()
     options.set_capability("browserName", "chrome")
-    options.set_capability("browserVersion", "127.0")
-    options.set_capability("selenoid:options", {
-        "enableVNC": True,
-        "enableVideo": True
-    })
+    options.set_capability("browserVersion", browser_version)
+    options.set_capability("selenoid:options", {"enableVNC": True, "enableVideo": True})
     options.set_capability("goog:loggingPrefs", {"browser": "ALL"})
 
     login = os.getenv("SELENOID_LOGIN")
@@ -26,15 +39,13 @@ def setup_browser():
 
     remote_url = f"https://{login}:{password}@{host}/wd/hub"
 
-    driver = webdriver.Remote(
-        command_executor=remote_url,
-        options=options
-    )
+    driver = webdriver.Remote(command_executor=remote_url, options=options)
 
     browser.config.driver = driver
     browser.config.base_url = "https://demoqa.com"
     browser.config.window_width = 1920
     browser.config.window_height = 1080
+    browser.config.timeout = 6
 
     yield browser
 
@@ -53,7 +64,7 @@ def setup_browser():
         f"<html><body><video width='100%' height='100%' controls autoplay>"
         f"<source src='{video_url}' type='video/mp4'></video></body></html>",
         name="video",
-        attachment_type=AttachmentType.HTML
+        attachment_type=AttachmentType.HTML,
     )
 
     driver.quit()
