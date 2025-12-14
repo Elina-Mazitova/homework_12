@@ -55,5 +55,9 @@ def setup_browser():
         name="video",
         attachment_type=AttachmentType.HTML
     )
+    print("SELENOID_LOGIN:", login)
+    print("SELENOID_PASS:", password)
+    print("SELENOID_URL:", host)
+    print("REMOTE_URL:", remote_url)
 
     driver.quit()
