@@ -1,0 +1,1 @@
+REMOTE_URL=https://user1:1234@selenoid.autotests.cloud/wd/hub
