@@ -20,7 +20,11 @@ def setup_browser():
     })
     options.set_capability("goog:loggingPrefs", {"browser": "ALL"})
 
-    remote_url = os.getenv("REMOTE_URL")
+    login = os.getenv("SELENOID_LOGIN")
+    password = os.getenv("SELENOID_PASS")
+    host = os.getenv("SELENOID_URL")
+
+    remote_url = f"https://{login}:{password}@{host}/wd/hub"
 
     driver = webdriver.Remote(
         command_executor=remote_url,
